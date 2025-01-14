@@ -263,6 +263,7 @@ AD_PERFORMANCE_REPORT_FIELDS = [
     "ad_group_ad.ad.legacy_responsive_display_ad.short_headline",
     "ad_group_ad.ad.legacy_responsive_display_ad.square_logo_image",
     "ad_group_ad.ad.legacy_responsive_display_ad.square_marketing_image",
+    "ad_group_ad.ad.name",
     "ad_group_ad.ad.responsive_display_ad.accent_color",
     "ad_group_ad.ad.responsive_display_ad.allow_flexible_color",
     "ad_group_ad.ad.responsive_display_ad.business_name",

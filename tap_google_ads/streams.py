@@ -14,7 +14,7 @@ from . import report_definitions
 
 LOGGER = singer.get_logger()
 
-API_VERSION = "v21"
+API_VERSION = "v20"
 
 API_PARAMETERS = {
     "omit_unselected_resource_names": "true"
@@ -27,7 +27,7 @@ REPORTS_WITH_90_DAY_MAX = frozenset(
 )
 
 DEFAULT_CONVERSION_WINDOW = 30
-DEFAULT_REQUEST_TIMEOUT = 900  # in seconds
+DEFAULT_REQUEST_TIMEOUT = 900 # in seconds
 
 
 def get_conversion_window(config):
@@ -39,7 +39,7 @@ def get_conversion_window(config):
     except (ValueError, TypeError) as err:
         raise RuntimeError("Conversion Window must be an int or string") from err
 
-    if conversion_window in set(range(1, 31)) or conversion_window in {60, 90}:
+    if conversion_window in set(range(1,31)) or conversion_window in {60, 90}:
         return conversion_window
 
     raise RuntimeError("Conversion Window must be between 1 - 30 inclusive, 60, or 90")
@@ -52,11 +52,9 @@ def get_request_timeout(config):
     try:
         request_timeout = int(request_timeout)
     except (ValueError, TypeError):
-        LOGGER.warning(
-            f"The provided request_timeout {request_timeout} is invalid; it will be set to the default request timeout of {DEFAULT_REQUEST_TIMEOUT}.")
+        LOGGER.warning(f"The provided request_timeout {request_timeout} is invalid; it will be set to the default request timeout of {DEFAULT_REQUEST_TIMEOUT}.")
         request_timeout = DEFAULT_REQUEST_TIMEOUT
     return request_timeout
-
 
 def create_nested_resource_schema(resource_schema, fields):
     new_schema = {
@@ -96,7 +94,6 @@ def get_selected_fields(stream_mdata):
 def build_parameters():
     param_str = ",".join(f"{k}={v}" for k, v in API_PARAMETERS.items())
     return f"PARAMETERS {param_str}"
-
 
 def generate_where_and_orderby_clause(last_pk_fetched, filter_param, composite_pks):
     """
@@ -145,8 +142,8 @@ def generate_where_and_orderby_clause(last_pk_fetched, filter_param, composite_p
 
     return f'{where_clause}{order_by_clause}'
 
-
 def create_core_stream_query(resource_name, selected_fields, last_pk_fetched, filter_param, composite_pks, limit=None):
+
     # Generate a query using WHERE and ORDER BY parameters.
     where_order_by_clause = generate_where_and_orderby_clause(last_pk_fetched, filter_param, composite_pks)
 
@@ -160,6 +157,7 @@ def create_core_stream_query(resource_name, selected_fields, last_pk_fetched, fi
 
 
 def create_report_query(resource_name, selected_fields, query_date):
+
     format_str = "%Y-%m-%d"
     query_date = utils.strftime(query_date, format_str=format_str)
     report_query = f"SELECT {','.join(selected_fields)} FROM {resource_name} WHERE segments.date = '{query_date}' {build_parameters()}"
@@ -197,6 +195,7 @@ timeout_errors = [
 
 
 def should_give_up(ex):
+
     # ServerError is the parent class of InternalServerError, MethodNotImplemented, BadGateway,
     # ServiceUnavailable, GatewayTimeout, DataLoss and Unknown classes.
     # Return False for all above errors and ReadTimeout error.
@@ -218,8 +217,7 @@ def should_give_up(ex):
                 LOGGER.info(f'Retrying request due to {err}')
                 return False
             if err in timeout_errors:
-                raise TimeoutException(
-                    'Request was not able to complete within allotted timeout. Try reducing the amount of data being requested before increasing timeout.')
+                raise TimeoutException('Request was not able to complete within allotted timeout. Try reducing the amount of data being requested before increasing timeout.')
         return True
 
 
@@ -264,7 +262,6 @@ def filter_out_non_attribute_fields(fields):
             for field_name, field_data in fields.items()
             if field_data["field_details"]["category"] == "ATTRIBUTE"}
 
-
 def write_bookmark_for_core_streams(state, stream, customer_id, last_pk_fetched):
     # Write bookmark for core streams.
     singer.write_bookmark(state, stream, customer_id, {'last_pk_fetched': last_pk_fetched})
@@ -272,11 +269,9 @@ def write_bookmark_for_core_streams(state, stream, customer_id, last_pk_fetched)
     singer.write_state(state)
     LOGGER.info("Write state for stream: %s, value: %s", stream, last_pk_fetched)
 
-
 class BaseStream:  # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, fields, google_ads_resource_names, resource_schema, primary_keys, automatic_keys=None,
-                 filter_param=None):
+    def __init__(self, fields, google_ads_resource_names, resource_schema, primary_keys, automatic_keys = None, filter_param = None):
         self.fields = fields
         self.google_ads_resource_names = google_ads_resource_names
         self.primary_keys = primary_keys
@@ -289,6 +284,7 @@ class BaseStream:  # pylint: disable=too-many-instance-attributes
         self.format_field_names()
 
         self.build_stream_metadata()
+
 
     def extract_field_information(self, resource_schema):
         self.field_exclusions = defaultdict(set)
@@ -311,6 +307,7 @@ class BaseStream:  # pylint: disable=too-many-instance-attributes
 
         self.field_exclusions = {k: list(v) for k, v in self.field_exclusions.items()}
 
+
     def create_full_schema(self, resource_schema):
         google_ads_name = self.google_ads_resource_names[0]
         self.resource_object = resource_schema[google_ads_name]
@@ -330,15 +327,14 @@ class BaseStream:  # pylint: disable=too-many-instance-attributes
             # ads stream is special since all of the ad fields are nested under ad_group_ad.ad
             # we need to bump the fields up a level so they are selectable
             if resource_name == "ad_group_ad":
-                for ad_field_name, ad_field_schema in self.full_schema["properties"]["ad_group_ad"]["properties"]["ad"][
-                    "properties"].items():
+                for ad_field_name, ad_field_schema in self.full_schema["properties"]["ad_group_ad"]["properties"]["ad"]["properties"].items():
                     self.stream_schema["properties"][ad_field_name] = ad_field_schema
                 self.stream_schema["properties"].pop("ad")
 
             if (
-                    resource_name not in {"metrics", "segments"}
-                    and resource_name not in self.google_ads_resource_names
-                    and "id" in schema["properties"]
+                resource_name not in {"metrics", "segments"}
+                and resource_name not in self.google_ads_resource_names
+                and "id" in schema["properties"]
             ):
                 self.stream_schema["properties"][resource_name + "_id"] = schema["properties"]["id"]
 
@@ -423,10 +419,9 @@ class BaseStream:  # pylint: disable=too-many-instance-attributes
         if "type_" in transformed_message:
             transformed_message["type"] = transformed_message.pop("type_")
 
-
         return transformed_message
 
-    def sync(self, sdk_client, customer, stream, config, state, query_limit):  # pylint: disable=unused-argument
+    def sync(self, sdk_client, customer, stream, config, state, query_limit): # pylint: disable=unused-argument
         gas = sdk_client.get_service("GoogleAdsService", version=API_VERSION)
         resource_name = self.google_ads_resource_names[0]
         stream_name = stream["stream"]
@@ -466,8 +461,7 @@ class BaseStream:  # pylint: disable=too-many-instance-attributes
 
             # Loop until the last page.
             while is_more_records:
-                query = create_core_stream_query(resource_name, selected_fields, last_pk_fetched_value,
-                                                 self.filter_param, composite_pks, limit=limit)
+                query = create_core_stream_query(resource_name, selected_fields, last_pk_fetched_value, self.filter_param, composite_pks, limit=limit)
                 try:
                     response = make_request(gas, query, customer["customerId"], config)
                 except GoogleAdsException as err:
@@ -480,21 +474,18 @@ class BaseStream:  # pylint: disable=too-many-instance-attributes
                     for message in response:
                         json_message = google_message_to_json(message)
                         transformed_message = self.transform_keys(json_message)
-                        record = transformer.transform(transformed_message, stream["schema"],
-                                                       singer.metadata.to_map(stream_mdata))
+                        record = transformer.transform(transformed_message, stream["schema"], singer.metadata.to_map(stream_mdata))
                         singer.write_record(stream_name, record)
                         counter.increment()
                         num_rows = num_rows + 1
                         if stream_name in limit_not_possible:
                             # Write state(last_pk_fetched) using primary key(id) value for core streams after query_limit records
                             if counter.value % query_limit == 0 and self.filter_param:
-                                write_bookmark_for_core_streams(state, stream["tap_stream_id"], customer["customerId"],
-                                                                record[self.primary_keys[0]])
+                                write_bookmark_for_core_streams(state, stream["tap_stream_id"], customer["customerId"], record[self.primary_keys[0]])
 
                 if record and self.filter_param and stream_name not in limit_not_possible:
                     # Write the id of the last record for the stream, which supports the filter parameter(WHERE clause) and do not belong to limit_not_possible category.
-                    write_bookmark_for_core_streams(state, stream["tap_stream_id"], customer["customerId"],
-                                                    record[self.primary_keys[0]])
+                    write_bookmark_for_core_streams(state, stream["tap_stream_id"], customer["customerId"], record[self.primary_keys[0]])
                     last_pk_fetched_value = record[self.primary_keys[0]]
                     # Fetch the next page of records
                     if num_rows >= limit:
@@ -503,11 +494,11 @@ class BaseStream:  # pylint: disable=too-many-instance-attributes
                 # Break the loop if no more records are available or the LIMIT clause is not possible.
                 is_more_records = False
 
+
         # Flush the state for core streams if sync is completed
         if stream["tap_stream_id"] in state.get('bookmarks', {}):
             state['bookmarks'].pop(stream["tap_stream_id"])
             singer.write_state(state)
-
 
 def get_query_date(start_date, bookmark, conversion_window_date):
     """Return a date within the conversion window and after start date
@@ -526,7 +517,6 @@ class UserInterestStream(BaseStream):
     user_interest stream has `user_interest.user_interest_id` instead of a `user_interest.id`
     this class sets it to id for the user_interest core stream
     """
-
     def format_field_names(self):
 
         schema = self.full_schema["properties"]["user_interest"]
@@ -665,8 +655,7 @@ class ReportStream(BaseStream):
                     else:
                         new_field_name = field_name.split(".")[1]
 
-                    self.stream_metadata[("properties", transformed_field_name)]["fieldExclusions"].append(
-                        new_field_name)
+                    self.stream_metadata[("properties", transformed_field_name)]["fieldExclusions"].append(new_field_name)
 
             # Add inclusion metadata
             if self.behavior[report_field]:
@@ -681,8 +670,7 @@ class ReportStream(BaseStream):
             if "tap-google-ads.api-field-names" not in self.stream_metadata[("properties", transformed_field_name)]:
                 self.stream_metadata[("properties", transformed_field_name)]["tap-google-ads.api-field-names"] = []
 
-            self.stream_metadata[("properties", transformed_field_name)]["tap-google-ads.api-field-names"].append(
-                report_field)
+            self.stream_metadata[("properties", transformed_field_name)]["tap-google-ads.api-field-names"].append(report_field)
 
     def transform_keys(self, json_message):
         transformed_message = {}
@@ -742,12 +730,10 @@ class ReportStream(BaseStream):
             cutoff = end_date.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=90)
             query_date = max(query_date, cutoff)
             if query_date == cutoff:
-                LOGGER.info(
-                    f"Stream: {stream_name} supports only 90 days of data. Setting query date to {utils.strftime(query_date, '%Y-%m-%d')}.")
+                LOGGER.info(f"Stream: {stream_name} supports only 90 days of data. Setting query date to {utils.strftime(query_date, '%Y-%m-%d')}.")
 
         if selected_fields == {'segments.date'}:
-            raise Exception(
-                f"Selected fields is currently limited to {', '.join(selected_fields)}. Please select at least one attribute and metric in order to replicate {stream_name}.")
+            raise Exception(f"Selected fields is currently limited to {', '.join(selected_fields)}. Please select at least one attribute and metric in order to replicate {stream_name}.")
 
         while query_date <= end_date:
             query = create_report_query(resource_name, selected_fields, query_date)
@@ -759,6 +745,7 @@ class ReportStream(BaseStream):
                 LOGGER.warning("Failed query: %s", query)
                 LOGGER.critical(str(err.failure.errors[0].message))
                 raise RuntimeError from None
+
 
             with Transformer() as transformer:
                 # Pages are fetched automatically while iterating through the response
@@ -803,14 +790,14 @@ def initialize_core_streams(resource_schema):
             {
                 "campaign_id",
                 "customer_id",
-            },
+             },
             filter_param="ad_group.id"
         ),
         "ad_group_criterion": BaseStream(
             report_definitions.AD_GROUP_CRITERION_FIELDS,
             ["ad_group_criterion"],
             resource_schema,
-            ["ad_group_id", "criterion_id"],
+            ["ad_group_id","criterion_id"],
             {
                 "campaign_id",
                 "customer_id",
@@ -826,8 +813,15 @@ def initialize_core_streams(resource_schema):
                 "ad_group_id",
                 "campaign_id",
                 "customer_id",
-            },
-            filter_param="ad_group_ad.ad.id"
+             },
+            filter_param = "ad_group_ad.ad.id"
+        ),
+        "assets": BaseStream(
+            report_definitions.ASSET_FIELDS,
+            ["asset"],
+            resource_schema,
+            ["id"],
+            filter_param="asset.id"
         ),
         "bidding_strategies": BaseStream(
             report_definitions.BIDDING_STRATEGY_FIELDS,
@@ -846,7 +840,7 @@ def initialize_core_streams(resource_schema):
                 "ad_group_id",
                 "campaign_id",
                 "customer_id",
-            },
+             },
         ),
         "campaigns": BaseStream(
             report_definitions.CAMPAIGN_FIELDS,
@@ -868,7 +862,7 @@ def initialize_core_streams(resource_schema):
             report_definitions.CAMPAIGN_CRITERION_FIELDS,
             ["campaign_criterion"],
             resource_schema,
-            ["campaign_id", "criterion_id"],
+            ["campaign_id","criterion_id"],
             {"customer_id"},
             filter_param="campaign.id"
         ),
@@ -888,26 +882,7 @@ def initialize_core_streams(resource_schema):
             ["carrier_constant"],
             resource_schema,
             ["id"],
-            filter_param="carrier_constant.id"
-        ),
-        "feed": BaseStream(
-            report_definitions.FEED_FIELDS,
-            ["feed"],
-            resource_schema,
-            ["id"],
-            {"customer_id"},
-            filter_param="feed.id"
-        ),
-        "feed_item": BaseStream(
-            report_definitions.FEED_ITEM_FIELDS,
-            ["feed_item"],
-            resource_schema,
-            ["id"],
-            {
-                "customer_id",
-                "feed_id",
-            },
-            filter_param="feed_item.id"
+           filter_param="carrier_constant.id"
         ),
         "labels": BaseStream(
             report_definitions.LABEL_FIELDS,
@@ -987,7 +962,7 @@ def initialize_reports(resource_schema):
             {
                 "ad_group_criterion_criterion_id",
                 "ad_group_id",
-            },
+             },
         ),
         "ad_group_performance_report": ReportStream(
             report_definitions.AD_GROUP_PERFORMANCE_REPORT_FIELDS,
@@ -1012,7 +987,7 @@ def initialize_reports(resource_schema):
                 "ad_group_criterion_age_range",
                 "ad_group_criterion_criterion_id",
                 "ad_group_id",
-            },
+             },
         ),
         "campaign_performance_report": ReportStream(
             report_definitions.CAMPAIGN_PERFORMANCE_REPORT_FIELDS,
@@ -1117,23 +1092,6 @@ def initialize_reports(resource_schema):
             resource_schema,
             ["_sdc_record_hash"],
             {"landing_page_view_unexpanded_final_url"},
-        ),
-        "placeholder_feed_item_report": ReportStream(
-            report_definitions.PLACEHOLDER_FEED_ITEM_REPORT_FIELDS,
-            ["feed_item"],
-            resource_schema,
-            ["_sdc_record_hash"],
-            {
-                "feed_id",
-                "feed_item_id",
-            }
-        ),
-        "placeholder_report": ReportStream(
-            report_definitions.PLACEHOLDER_REPORT_FIELDS,
-            ["feed_placeholder_view"],
-            resource_schema,
-            ["_sdc_record_hash"],
-            {"feed_placeholder_view_placeholder_type"},
         ),
         "placement_performance_report": ReportStream(
             report_definitions.PLACEMENT_PERFORMANCE_REPORT_FIELDS,

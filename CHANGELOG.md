@@ -1,5 +1,25 @@
 # Changelog
 
+## v2.0.0
+  * Updates API version to 20
+  * Add new stream `assets`
+  * Remove feed-related streams
+  * Updates pkg version to 27.0.0
+  * Updates `singer-python` to 6.1.1
+  * [#97](https://github.com/singer-io/tap-google-ads/pull/97)
+
+## v1.10.0
+  * Fail the connection once every 3 days to ensure customers are aware of the version deprecation. [#100](https://github.com/singer-io/tap-google-ads/pull/100)
+
+## v1.9.1
+  * Bump dependency versions for twistlock compliance
+  * Update circleci config to handle linting errors
+  * [#96](https://github.com/singer-io/tap-google-ads/pull/96)
+
+## v1.9.0
+  * Updates API version to 17
+  * [#95](https://github.com/singer-io/tap-google-ads/pull/95)
+
 ## v1.8.0
   * Updates API version to 17
   * Updates pkg version to 25.0.0

@@ -3,7 +3,7 @@
 set -o errexit
 set -o pipefail
 
-IMAGE='europe-docker.pkg.dev/artifact-registry-412407/docker-image/singer-tap-google-ads'
+IMAGE='europe-west9-docker.pkg.dev/artifact-registry-412407/docker-image-opensourcefork/singer-tap-google-ads'
 
 TAGS_DEFAULT=$(git describe --tags --always --first-parent | sed 's/^v//')
 echo -n "TAGS [$TAGS_DEFAULT]:"

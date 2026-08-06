@@ -20,6 +20,7 @@ STREAMS = [
     "bidding_strategy",
     "call_view",
     "campaign",
+    "campaign_asset",
     "campaign_audience_view",
     "campaign_budget",
     "campaign_criterion",

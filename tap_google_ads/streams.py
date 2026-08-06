@@ -11,10 +11,9 @@ from google.api_core.exceptions import ServerError, TooManyRequests
 from requests.exceptions import ReadTimeout
 import backoff
 from . import report_definitions
+from .client import API_VERSION
 
 LOGGER = singer.get_logger()
-
-API_VERSION = "v22"
 
 API_PARAMETERS = {
     "omit_unselected_resource_names": "true"
@@ -849,6 +848,17 @@ def initialize_core_streams(resource_schema):
             ["id"],
             {"customer_id"},
             filter_param="campaign.id"
+        ),
+        "campaign_assets": BaseStream(
+            report_definitions.CAMPAIGN_ASSET_FIELDS,
+            ["campaign_asset"],
+            resource_schema,
+            ["resource_name"],
+            {
+                "asset_id",
+                "campaign_id",
+                "customer_id",
+            },
         ),
         "campaign_budgets": BaseStream(
             report_definitions.CAMPAIGN_BUDGET_FIELDS,

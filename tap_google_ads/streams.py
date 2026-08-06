@@ -62,11 +62,6 @@ def create_nested_resource_schema(resource_schema, fields):
     }
 
     for field in fields:
-        # ponytail: hardcoded report_definitions fields outlive API versions
-        # (e.g. metrics.average_cpv dropped in v22) - skip what the API no longer exposes
-        if field not in resource_schema:
-            LOGGER.warning("Field %s is not available in %s, skipping it", field, API_VERSION)
-            continue
         walker = new_schema["properties"]
         paths = field.split(".")
         last_path = paths[-1]
@@ -276,7 +271,12 @@ def write_bookmark_for_core_streams(state, stream, customer_id, last_pk_fetched)
 class BaseStream:  # pylint: disable=too-many-instance-attributes
 
     def __init__(self, fields, google_ads_resource_names, resource_schema, primary_keys, automatic_keys = None, filter_param = None):
-        self.fields = fields
+        # ponytail: hardcoded report_definitions fields outlive API versions
+        # (e.g. metrics.average_cpv dropped in v22) - drop what the API no longer exposes
+        for field in fields:
+            if field not in resource_schema:
+                LOGGER.warning("Field %s is not available in %s, skipping it", field, API_VERSION)
+        self.fields = [field for field in fields if field in resource_schema]
         self.google_ads_resource_names = google_ads_resource_names
         self.primary_keys = primary_keys
         self.automatic_keys = automatic_keys if automatic_keys else set()

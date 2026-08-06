@@ -62,6 +62,11 @@ def create_nested_resource_schema(resource_schema, fields):
     }
 
     for field in fields:
+        # ponytail: hardcoded report_definitions fields outlive API versions
+        # (e.g. metrics.average_cpv dropped in v22) - skip what the API no longer exposes
+        if field not in resource_schema:
+            LOGGER.warning("Field %s is not available in %s, skipping it", field, API_VERSION)
+            continue
         walker = new_schema["properties"]
         paths = field.split(".")
         last_path = paths[-1]

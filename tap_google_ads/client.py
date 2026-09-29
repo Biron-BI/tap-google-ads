@@ -1,6 +1,6 @@
 from google.ads.googleads.client import GoogleAdsClient
 
-API_VERSION = "v22"
+API_VERSION = "v25"
 
 
 def create_sdk_client(config, login_customer_id=None):

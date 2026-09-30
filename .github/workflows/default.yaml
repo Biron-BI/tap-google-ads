@@ -30,7 +30,3 @@ jobs:
           file: docker/Dockerfile
           push: true
           tags: ${{ vars.ARTIFACT_REGISTRY_OPENSOURCE_FORK_GOOGLE_REGISTRY }}/${{ vars.ARTIFACT_REGISTRY_OPENSOURCE_FORK_GOOGLE_PROJECT }}/singer-tap-google-ads:${{ github.ref_name }}
-          build-args: |
-            MAVEN_USERNAME=${{ secrets.MAVEN_USERNAME }}
-            MAVEN_PASSWORD=${{ secrets.MAVEN_PASSWORD }}
-            MAVEN_URL=${{ vars.MAVEN_URL }}

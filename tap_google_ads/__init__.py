@@ -2,6 +2,7 @@
 import logging
 import singer
 from singer import utils
+from tap_google_ads.client import validate_auth_config
 from tap_google_ads.discover import create_resource_schema
 from tap_google_ads.discover import do_discover
 from tap_google_ads.sync import do_sync
@@ -12,9 +13,6 @@ LOGGER = singer.get_logger()
 
 REQUIRED_CONFIG_KEYS = [
     "start_date",
-    "oauth_client_id",
-    "oauth_client_secret",
-    "refresh_token",
     "customer_ids",
     "developer_token",
 ]
@@ -22,6 +20,7 @@ REQUIRED_CONFIG_KEYS = [
 
 def main_impl():
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
+    validate_auth_config(args.config)
     resource_schema = create_resource_schema(args.config)
     state = {}
 

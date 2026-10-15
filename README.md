@@ -54,6 +54,26 @@ The Google Ads API supports the `start_date` and `end_date` parameters that limi
 
 This tap requires a `config.json` which specifies details regarding [OAuth 2.0](https://developers.google.com/google-ads/api/docs/oauth/overview) authentication and a cutoff date for syncing historical data. See [config.sample.json](config.sample.json) for an example.
 
+### Service account authentication
+
+Instead of `oauth_client_id`, `oauth_client_secret` and `refresh_token`, the tap can authenticate with a [service account](https://developers.google.com/google-ads/api/docs/oauth/service-accounts). Set `service_account_key` to the service account's JSON key, either as an object or as a JSON-encoded string. When `service_account_key` is set, it takes precedence over the OAuth keys. A `developer_token` is still required, and the service account's email must be added as a user on the Google Ads account (or on the manager account used as `loginCustomerId`).
+
+```json
+{
+    "start_date": "2020-10-01T00:00:00Z",
+    "login_customer_ids": [{"customerId": "1234567890", "loginCustomerId": "0987654321"}],
+    "service_account_key": {
+        "type": "service_account",
+        "project_id": "my-project",
+        "private_key_id": "...",
+        "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+        "client_email": "tap-google-ads@my-project.iam.gserviceaccount.com",
+        "token_uri": "https://oauth2.googleapis.com/token"
+    },
+    "developer_token": "developer_token"
+}
+```
+
 To run the discover mode of `tap-google-ads` with the configuration file, use this command:
 
 ```bash

@@ -36,7 +36,6 @@ def create_sdk_client(config, login_customer_id=None):
     if config.get("service_account_key"):
         return GoogleAdsClient(
             credentials=get_service_account_credentials(config),
-            developer_token=config["developer_token"],
             login_customer_id=login_customer_id,
             use_proto_plus=False,
             version=API_VERSION,
@@ -44,7 +43,6 @@ def create_sdk_client(config, login_customer_id=None):
 
     CONFIG = {
         "use_proto_plus": False,
-        "developer_token": config["developer_token"],
         "client_id": config["oauth_client_id"],
         "client_secret": config["oauth_client_secret"],
         "refresh_token": config["refresh_token"],

@@ -56,7 +56,7 @@ This tap requires a `config.json` which specifies details regarding [OAuth 2.0](
 
 ### Service account authentication
 
-Instead of `oauth_client_id`, `oauth_client_secret` and `refresh_token`, the tap can authenticate with a [service account](https://developers.google.com/google-ads/api/docs/oauth/service-accounts). Set `service_account_key` to the service account's JSON key, either as an object or as a JSON-encoded string. When `service_account_key` is set, it takes precedence over the OAuth keys. A `developer_token` is still required, and the service account's email must be added as a user on the Google Ads account (or on the manager account used as `loginCustomerId`).
+Instead of `oauth_client_id`, `oauth_client_secret` and `refresh_token`, the tap can authenticate with a [service account](https://developers.google.com/google-ads/api/docs/oauth/service-accounts). Set `service_account_key` to the service account's JSON key, either as an object or as a JSON-encoded string. When `service_account_key` is set, it takes precedence over the OAuth keys. The service account's email must be added as a user on the Google Ads account (or on the manager account used as `loginCustomerId`).
 
 ```json
 {
@@ -69,8 +69,7 @@ Instead of `oauth_client_id`, `oauth_client_secret` and `refresh_token`, the tap
         "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
         "client_email": "tap-google-ads@my-project.iam.gserviceaccount.com",
         "token_uri": "https://oauth2.googleapis.com/token"
-    },
-    "developer_token": "developer_token"
+    }
 }
 ```
 

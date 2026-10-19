@@ -50,8 +50,7 @@ class GoogleAdsBase(unittest.TestCase):
 
     @staticmethod
     def get_credentials(self):
-        return {'developer_token': os.getenv('TAP_ADWORDS_DEVELOPER_TOKEN'),
-                'oauth_client_id': os.getenv('TAP_ADWORDS_OAUTH_CLIENT_ID'),
+        return {'oauth_client_id': os.getenv('TAP_ADWORDS_OAUTH_CLIENT_ID'),
                 'oauth_client_secret': os.getenv('TAP_ADWORDS_OAUTH_CLIENT_SECRET'),
                 'refresh_token':     os.getenv('TAP_ADWORDS_REFRESH_TOKEN')}
 
@@ -225,8 +224,7 @@ class GoogleAdsBase(unittest.TestCase):
 
 
     def setUp(self):
-        missing_envs = [x for x in [os.getenv('TAP_ADWORDS_DEVELOPER_TOKEN'),
-                                    os.getenv('TAP_ADWORDS_OAUTH_CLIENT_ID'),
+        missing_envs = [x for x in [os.getenv('TAP_ADWORDS_OAUTH_CLIENT_ID'),
                                     os.getenv('TAP_ADWORDS_OAUTH_CLIENT_SECRET'),
                                     os.getenv('TAP_ADWORDS_REFRESH_TOKEN'),
                                     os.getenv('TAP_ADWORDS_CUSTOMER_IDS')] if x == None]
